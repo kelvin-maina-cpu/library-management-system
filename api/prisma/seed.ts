@@ -1,3 +1,4 @@
+import * as bcrypt from 'bcrypt';
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
@@ -53,7 +54,7 @@ async function main() {
       await prisma.book.upsert({
         where: { isbn },
         update: {},
-        create: { title, author, isbn, publishedYear, copiesAvailable: 3, genreId: genre.id },
+        create: { title, author, isbn, publishedYear, totalCopies: 3, genreId: genre.id },
       });
     }
   }
@@ -61,7 +62,12 @@ async function main() {
   await prisma.user.upsert({
     where: { email: 'librarian@example.com' },
     update: {},
-    create: { email: 'librarian@example.com', name: 'Head Librarian', role: 'LIBRARIAN' },
+    create: {
+      email: 'librarian@example.com',
+      name: 'Head Librarian',
+      password: await bcrypt.hash('Librarian123!', 10),
+      role: 'LIBRARIAN',
+    },
   });
 
   console.log(`Seeded ${await prisma.genre.count()} genres and ${await prisma.book.count()} books.`);
